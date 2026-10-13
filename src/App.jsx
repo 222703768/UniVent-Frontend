@@ -11,6 +11,7 @@ import EventDetail from "./pages/student/EventDetail";
 import MyBookings from "./pages/student/MyBookings";
 import TicketView from "./pages/student/TicketView";
 import StudentProfile from "./pages/student/StudentProfile";
+import StudentNotifications from "./pages/student/StudentNotifications";
 
 
 import OrganizerEvents from "./pages/organizer/OrganizerEvents";
@@ -98,11 +99,31 @@ export default function App() {
           }
         />
         <Route
+          path="/student/events"
+          element={
+            <ProtectedRoute>
+              <RoleRoute allowedRoles={["STUDENT"]}>
+                <StudentEventFeed />
+              </RoleRoute>
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/student/events/:id"
           element={
             <ProtectedRoute>
               <RoleRoute allowedRoles={["STUDENT"]}>
                 <EventDetail />
+              </RoleRoute>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/student/my-events"
+          element={
+            <ProtectedRoute>
+              <RoleRoute allowedRoles={["STUDENT"]}>
+                <MyBookings />
               </RoleRoute>
             </ProtectedRoute>
           }
@@ -123,6 +144,16 @@ export default function App() {
             <ProtectedRoute>
               <RoleRoute allowedRoles={["STUDENT"]}>
                 <TicketView />
+              </RoleRoute>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/student/notifications"
+          element={
+            <ProtectedRoute>
+              <RoleRoute allowedRoles={["STUDENT"]}>
+                <StudentNotifications />
               </RoleRoute>
             </ProtectedRoute>
           }
