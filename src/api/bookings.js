@@ -5,6 +5,22 @@ export const createBooking = async (eventId) => {
   return response.data;
 };
 
+/**
+ * Check whether the authenticated student already has a booking for an event.
+ *
+ * Agreed contract (BE 06): GET /api/bookings/exists?eventId={id}
+ *
+ * The exact response shape is NOT finalised by the backend yet, so the raw
+ * payload is returned unchanged and the caller interprets it defensively.
+ * Confirm the shape with the backend owner before relying on it.
+ */
+export const bookingExists = async (eventId) => {
+  const response = await client.get("/api/bookings/exists", {
+    params: { eventId },
+  });
+  return response.data;
+};
+
 export const getMyBookings = async () => {
   const response = await client.get("/api/bookings/my");
   return response.data;
