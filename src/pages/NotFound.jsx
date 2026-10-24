@@ -1,16 +1,36 @@
-import { Link } from "react-router-dom";
-import { useAuth } from "../hooks/useAuth";
+import { Link, useNavigate } from "react-router-dom";
+import StatusPage, { primaryAction } from "@/components/shared/StatusPage";
+import { useAuth } from "@/hooks/useAuth";
 
+/*
+ * FE 53 Not Found.
+ * Anonymous users are sent to Login; signed-in users to their own role home.
+ * If a signed-in account has an unrecognised role, there is no valid home to send it to,
+ * so we offer "Sign out" instead of a link that would bounce back here (no redirect loop).
+ */
 export default function NotFound() {
-  const { getHomePath } = useAuth();
+  const { isAuthenticated, getHomePath, logout } = useAuth();
+  const navigate = useNavigate();
+  const signedIn = isAuthenticated();
+  const home = getHomePath();
+  const hasValidHome = signedIn && home !== "/login";
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen gap-4">
-      <h1 className="text-4xl font-bold text-gray-800">404</h1>
-      <p className="text-gray-500">Page not found.</p>
-      <Link to={getHomePath()} className="text-purple-600 underline">
-        Back to Dashboard
-      </Link>
-    </div>
+    <StatusPage code="404" title="Page not found" message="The page you are looking for does not exist or may have moved.">
+      {hasValidHome && <Link to={home} className={primaryAction}>Back to your home</Link>}
+      {!signedIn && <Link to="/login" className={primaryAction}>Go to login</Link>}
+      {signedIn && !hasValidHome && (
+        <button
+          type="button"
+          onClick={() => {
+            logout();
+            navigate("/login", { replace: true });
+          }}
+          className={primaryAction}
+        >
+          Sign out
+        </button>
+      )}
+    </StatusPage>
   );
 }

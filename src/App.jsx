@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "./hooks/useAuth";
+import AppShell from "./components/shared/AppShell";
 
 
 import LoginPage from "./pages/auth/LoginPage";
@@ -36,7 +37,7 @@ function ProtectedRoute({ children }) {
     return <Navigate to="/login" replace />;
   }
 
-  return children;
+  return <AppShell>{children}</AppShell>;
 }
 
 

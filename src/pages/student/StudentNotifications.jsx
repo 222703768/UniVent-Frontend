@@ -14,6 +14,7 @@ import {
   markAllNotificationsRead,
   markNotificationRead,
 } from "../../api/notifications";
+import { setUnreadCount } from "../../hooks/useUnreadCount";
 
 const TYPE_DETAILS = {
   REGISTRATION_CONFIRMED: { Icon: CircleCheck, className: "bg-emerald-50 text-emerald-700" },
@@ -47,7 +48,9 @@ export default function StudentNotifications() {
     setLoading(true);
     setError("");
     try {
-      setNotifications(await getNotifications());
+      const data = await getNotifications();
+      setNotifications(data);
+      setUnreadCount(data.filter((notification) => !notification.read).length);
     } catch (requestError) {
       setError(requestError.response?.data?.message || "We could not load your notifications.");
     } finally {
@@ -72,6 +75,7 @@ export default function StudentNotifications() {
     try {
       await markAllNotificationsRead();
       setNotifications((current) => current.map((item) => ({ ...item, read: true })));
+      setUnreadCount(0);
     } catch (requestError) {
       setError(requestError.response?.data?.message || "Notifications could not be marked as read.");
     } finally {
@@ -83,7 +87,11 @@ export default function StudentNotifications() {
     if (notification.read) return;
     try {
       const updated = await markNotificationRead(notification.id);
-      setNotifications((current) => current.map((item) => (item.id === updated.id ? updated : item)));
+      setNotifications((current) => {
+        const next = current.map((item) => (item.id === updated.id ? updated : item));
+        setUnreadCount(next.filter((item) => !item.read).length);
+        return next;
+      });
     } catch (requestError) {
       setError(requestError.response?.data?.message || "The notification could not be updated.");
     }
@@ -93,7 +101,11 @@ export default function StudentNotifications() {
     setError("");
     try {
       await dismissNotification(notificationId);
-      setNotifications((current) => current.filter((item) => item.id !== notificationId));
+      setNotifications((current) => {
+        const next = current.filter((item) => item.id !== notificationId);
+        setUnreadCount(next.filter((item) => !item.read).length);
+        return next;
+      });
     } catch (requestError) {
       setError(requestError.response?.data?.message || "The notification could not be dismissed.");
     }
