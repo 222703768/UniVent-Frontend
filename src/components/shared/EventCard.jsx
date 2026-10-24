@@ -2,6 +2,7 @@ import { useState } from "react";
 import { CalendarDays, Clock, ImageOff, MapPin } from "lucide-react";
 import { Link } from "react-router-dom";
 import { formatDate, formatTimeRange } from "@/lib/format";
+import StatusBadge from "./StatusBadge";
 
 /*
  * FE 51 Shared EventCard (Student Home and Browse Events).
@@ -44,7 +45,10 @@ export default function EventCard({ event, to, actionLabel = "View Details" }) {
       </div>
 
       <div className="flex flex-1 flex-col p-5">
-        <h3 className="line-clamp-2 min-h-[3.5rem] text-lg font-semibold leading-7 text-slate-950">{event.title}</h3>
+        <div className="flex items-start justify-between gap-3">
+          <h3 className="line-clamp-2 min-h-[3.5rem] text-lg font-semibold leading-7 text-slate-950">{event.title}</h3>
+          {event.status && <StatusBadge status={event.status} className="mt-0.5" />}
+        </div>
         <ul className="mt-3 space-y-1.5 text-slate-600">
           <li className="flex items-center gap-2.5">
             <CalendarDays size={18} className="shrink-0 text-slate-400" aria-hidden="true" />
