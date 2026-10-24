@@ -2,6 +2,7 @@ const dateFormatter = new Intl.DateTimeFormat("en-GB", { day: "numeric", month: 
 const timeFormatter = new Intl.DateTimeFormat("en-GB", { hour: "2-digit", minute: "2-digit", hour12: false });
 
 function toDate(value) {
+  if (value === null || value === undefined || value === "") return null;
   const date = new Date(value);
   return Number.isNaN(date.getTime()) ? null : date;
 }

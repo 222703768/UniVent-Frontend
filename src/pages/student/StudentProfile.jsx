@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import {
   getCurrentUser,
   updateCurrentUser,
@@ -30,8 +29,7 @@ function Field({ label, error, children }) {
 }
 
 export default function StudentProfile() {
-  const { logout, user } = useAuth();
-  const navigate = useNavigate();
+  const { user } = useAuth();
   const [profile, setProfile] = useState(null);
   const [form, setForm] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -143,11 +141,6 @@ export default function StudentProfile() {
     }
   };
 
-  const handleLogout = () => {
-    logout();
-    navigate("/login", { replace: true });
-  };
-
   if (loading) {
     return (
       <main className="min-h-screen bg-slate-50 px-5 py-12">
@@ -179,14 +172,11 @@ export default function StudentProfile() {
   return (
     <main className="min-h-screen bg-slate-50 px-5 py-10 text-slate-950 sm:px-8">
       <div className="mx-auto max-w-6xl">
-        <div className="mb-8 flex items-end justify-between gap-4">
+        <div className="mb-8">
           <div>
             <h1 className="text-4xl font-bold tracking-tight">Profile</h1>
             <p className="mt-2 text-slate-600">Manage your personal details and preferences.</p>
           </div>
-          <button onClick={handleLogout} className="rounded-lg border border-red-200 bg-white px-5 py-3 font-semibold text-red-700 hover:bg-red-50">
-            Log out
-          </button>
         </div>
 
         {(error || status) && (
