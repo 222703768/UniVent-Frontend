@@ -11,11 +11,12 @@ import EventDetail from "./pages/student/EventDetail";
 import MyBookings from "./pages/student/MyBookings";
 import TicketView from "./pages/student/TicketView";
 import StudentProfile from "./pages/student/StudentProfile";
-import StudentNotifications from "./pages/student/StudentNotifications";
+import StudentNotifications from "./pages/student/StudentNotifications"; 
+import StudentHome from "./pages/student/StudentHome";
 
 
 import OrganizerEvents from "./pages/organizer/OrganizerEvents";
-import CreateEvent from "./pages/organizer/CreateEvent";
+import CreateEvent from "./pages/organizer/CreateEvent";  
 import EditEvent from "./pages/organizer/EditEvent";
 import EventRegistrations from "./pages/organizer/EventRegistrations";
 
@@ -59,7 +60,7 @@ function RoleRoute({ children, allowedRoles }) {
  * /                        → redirect based on role
  * /login                   → Login page (public)
  * /register                → Register page (public)
- * /student                 → Student event feed
+ * /preview                 → Student event feed
  * /student/events/:id      → Event detail
  * /student/bookings        → My bookings
  * /student/tickets/:id     → Ticket view
@@ -88,16 +89,17 @@ export default function App() {
         <Route path="/unauthorized" element={<Unauthorized />} />
 
         
-        <Route
-          path="/student"
+ <Route
+          path="/student/home"
           element={
             <ProtectedRoute>
               <RoleRoute allowedRoles={["STUDENT"]}>
-                <StudentEventFeed />
+                <StudentHomepage />
               </RoleRoute>
             </ProtectedRoute>
           }
         />
+        
         <Route
           path="/student/events"
           element={
@@ -128,16 +130,9 @@ export default function App() {
             </ProtectedRoute>
           }
         />
-        <Route
-          path="/student/bookings"
-          element={
-            <ProtectedRoute>
-              <RoleRoute allowedRoles={["STUDENT"]}>
-                <MyBookings />
-              </RoleRoute>
-            </ProtectedRoute>
-          }
-        />
+
+        
+
         <Route
           path="/student/tickets/:bookingId"
           element={
