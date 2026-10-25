@@ -5,6 +5,11 @@ export const createBooking = async (eventId) => {
   return response.data;
 };
 
+export const hasBooking = async (eventId) => {
+  const response = await client.get("/api/bookings/exists", { params: { eventId } });
+  return response.data;
+};
+
 export const getMyBookings = async () => {
   const response = await client.get("/api/bookings/my");
   return response.data;

@@ -3,6 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import { register } from "../../api/auth";
 import { getHomePathForRole } from "../../context/auth-context";
+import campusImage from "../../assets/cput-campus-background.jpg";
 
 
 const FACULTY_DEPARTMENTS = {
@@ -98,7 +99,8 @@ export default function RegisterPage() {
 
 
   const [role, setRole] = useState("STUDENT");
-  const [name, setName] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [surname, setSurname] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -114,6 +116,9 @@ export default function RegisterPage() {
   const [organizationName, setOrganizationName] = useState("");
   const [organizationType, setOrganizationType] = useState("");
   const [contactEmail, setContactEmail] = useState("");
+  const [organizerStaffNumber, setOrganizerStaffNumber] = useState("");
+  const [adminStaffNumber, setAdminStaffNumber] = useState("");
+  const [termsAccepted, setTermsAccepted] = useState(false);
 
  
   const [error, setError] = useState("");
@@ -129,6 +134,8 @@ export default function RegisterPage() {
     setOrganizationName("");
     setOrganizationType("");
     setContactEmail("");
+    setOrganizerStaffNumber("");
+    setAdminStaffNumber("");
     setError("");
   };
 
@@ -139,16 +146,19 @@ export default function RegisterPage() {
   };
 
   
-  const validateEmail = (val) =>
-    /^[^\s@]+@[^\s@]+\.ac\.za$/.test(val);
+  const validateUniversityEmail = (val) =>
+    /^[^\s@]+@(?:mycput\.ac\.za|cput\.ac\.za)$/i.test(val.trim());
+
+  const validateContactEmail = (val) =>
+    /^[^\s@]+@[^\s@]+\.ac\.za$/i.test(val.trim());
 
   const validatePhone = (val) =>
     /^0[6-8][0-9]{8}$/.test(val.replace(/\s/g, ""));
 
   const validate = () => {
-    if (!name.trim()) return "Full name is required";
-    if (!validateEmail(email))
-      return "Please use your CPUT email address (e.g. 221234567@mycput.ac.za)";
+    if (!firstName.trim() || !surname.trim()) return "First name and surname are required";
+    if (!validateUniversityEmail(email))
+      return "Use an email ending in @mycput.ac.za or @cput.ac.za";
     if (password.length < 8)
       return "Password must be at least 8 characters";
     if (password !== confirmPassword)
@@ -165,11 +175,17 @@ export default function RegisterPage() {
     }
 
     if (role === "ORGANIZER") {
+      if (!organizerStaffNumber.trim()) return "Staff number is required";
       if (!organizationName.trim()) return "Organization name is required";
       if (!organizationType.trim()) return "Organization type is required";
-      if (!validateEmail(contactEmail))
+      if (!validateContactEmail(contactEmail))
         return "Please enter a valid contact email ending in .ac.za";
     }
+
+    if (role === "ADMIN") {
+      if (!adminStaffNumber.trim()) return "Staff number is required";
+    }
+    if (!termsAccepted) return "Please accept the university IT usage policy and event terms";
 
     return null; // null means no errors
   };
@@ -188,7 +204,7 @@ export default function RegisterPage() {
     const payload =
       role === "STUDENT"
         ? {
-            name: name.trim(),
+            name: `${firstName.trim()} ${surname.trim()}`,
             email,
             password,
             phoneNumber: phoneNumber.replace(/\s/g, ""),
@@ -198,16 +214,26 @@ export default function RegisterPage() {
             department,
             yearOfStudy: parseInt(yearOfStudy, 10),
           }
-        : {
-            name: name.trim(),
+        : role === "ORGANIZER"
+          ? {
+            name: `${firstName.trim()} ${surname.trim()}`,
             email,
             password,
             phoneNumber: phoneNumber.replace(/\s/g, ""),
-            role: "ORGANIZER",
+            role,
+            staffNumber: organizerStaffNumber.trim(),
             organizationName: organizationName.trim(),
             organizationType: organizationType.trim(),
             contactEmail,
-          };
+          }
+          : {
+              name: `${firstName.trim()} ${surname.trim()}`,
+              email,
+              password,
+              phoneNumber: phoneNumber.replace(/\s/g, ""),
+              role,
+              staffNumber: adminStaffNumber.trim(),
+            };
 
     setLoading(true);
     try {
@@ -226,123 +252,77 @@ export default function RegisterPage() {
   const departments = faculty ? FACULTY_DEPARTMENTS[faculty] : [];
 
   return (
-    <main className="grid min-h-screen place-items-center bg-[#f8f8f7] px-5 py-12 font-sans text-[#161616] sm:px-6">
-      <section className="w-full max-w-2xl" aria-labelledby="register-title">
+    <main className="grid min-h-screen bg-[#f6f8fb] font-sans text-[#1d2433] lg:grid-cols-2">
+      <aside
+        className="hidden min-h-screen flex-col justify-between bg-cover bg-center p-12 text-white lg:flex xl:p-16"
+        style={{
+          backgroundImage: `linear-gradient(160deg, rgba(20,24,28,.76), rgba(12,18,16,.72)), url(${campusImage})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundRepeat: "no-repeat",
+        }}
+      >
+        <div className="text-lg font-bold">UniVent<span className="mt-0.5 block text-[11px] font-normal opacity-80">University Event Management</span></div>
+        <div className="max-w-lg">
+          <h2 className="mb-3 text-3xl font-bold leading-tight">One place for every campus event.</h2>
+          <p className="max-w-md text-sm leading-6 opacity-85">Browse workshops, career fairs, sports days and cultural festivals. Register in a click and keep your schedule in one place.</p>
+          <ul className="mt-6 space-y-2 text-[13px] opacity-90">
+            <li>Students register for events and manage tickets</li>
+            <li>Organizers publish events after administrator approval</li>
+            <li>Discover what is happening across CPUT campuses</li>
+          </ul>
+        </div>
+        <p className="text-xs opacity-70">2026 UniVent · ICT Services</p>
+      </aside>
 
-        {/* Header */}
-        <header className="mb-10 sm:mb-[52px]">
-          <p className="mb-2.5 text-xs font-bold uppercase tracking-[0.14em] text-[#087dbb]">
-            UniVent
-          </p>
-          <h1
-            id="register-title"
-            className="text-4xl font-bold leading-tight tracking-[-0.035em] sm:text-[2.5rem]"
-          >
-            Create an account
-          </h1>
-          <p className="mt-2.5 text-base leading-6 text-gray-500 sm:text-lg">
-            Join UniVent to discover and manage events across CPUT campuses.
-          </p>
+      <section className="flex justify-center px-5 py-10 sm:px-8 sm:py-12 lg:max-h-screen lg:overflow-y-auto lg:px-10 xl:px-14" aria-labelledby="register-title">
+        <div className="my-auto w-full max-w-[450px]">
+        <header className="mb-7">
+          <p className="mb-2 text-xs font-bold uppercase tracking-[0.14em] text-[#1f6fd1] lg:hidden">UniVent</p>
+          <h1 id="register-title" className="text-[22px] font-bold leading-tight">Create your UniVent account</h1>
+          <p className="mt-1 text-sm text-[#6b7385]">Choose the account type that matches your role at the university.</p>
         </header>
 
-        <form onSubmit={handleSubmit} className="grid gap-6 sm:gap-7">
+        <form onSubmit={handleSubmit} className="grid gap-4">
 
           
           <div className="grid gap-2.5">
             <span className="font-semibold">I am a</span>
-            <div className="grid grid-cols-2 gap-3">
-              {["STUDENT", "ORGANIZER"].map((r) => (
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+              {["STUDENT", "ORGANIZER", "ADMIN"].map((r) => (
                 <button
                   key={r}
                   type="button"
                   onClick={() => handleRoleChange(r)}
-                  className={`h-14 rounded-lg border text-base font-semibold transition
+                  className={`min-h-[82px] rounded-[10px] border px-3 py-3 text-left transition
                     ${
                       role === r
-                        ? "border-[#087dbb] bg-[#087dbb] text-white shadow-[0_3px_8px_rgba(8,125,187,0.2)]"
-                        : "border-[#dedede] bg-white text-[#161616] hover:border-[#087dbb] hover:text-[#087dbb]"
+                        ? "border-[#1f6fd1] bg-[#e8f1fc] text-[#1d2433] shadow-[0_0_0_1px_#1f6fd1_inset]"
+                        : "border-[#e3e7ef] bg-white text-[#1d2433] hover:border-[#1f6fd1]"
                     }`}
                 >
-                  {r.charAt(0) + r.slice(1).toLowerCase()}
+                  <span className="block text-sm font-semibold">{r.charAt(0) + r.slice(1).toLowerCase()}</span>
+                  <span className="mt-1 block text-xs font-normal leading-[1.35] text-[#6b7385]">
+                    {r === "STUDENT"
+                      ? "Register for events and manage your tickets."
+                      : r === "ORGANIZER"
+                        ? "Staff or society leader who runs events."
+                        : "ICT Services staff. Use your staff number."}
+                  </span>
                 </button>
               ))}
             </div>
           </div>
 
           
-          <Field id="name" label="Full name">
-            <input
-              id="name"
-              name="name"
-              type="text"
-              autoComplete="name"
-              placeholder="e.g. Samukelo Dlamini"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              disabled={loading}
-              className={inputClass}
-            />
-          </Field>
-
-          <Field
-            id="email"
-            label="CPUT email"
-            hint="Use your university email ending in .ac.za"
-          >
-            <input
-              id="email"
-              name="email"
-              type="email"
-              autoComplete="email"
-              placeholder="e.g. 221234567@mycput.ac.za"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              disabled={loading}
-              className={inputClass}
-            />
-          </Field>
-
-          <Field id="phone" label="Mobile number" hint="South African number e.g. 0821234567">
-            <input
-              id="phone"
-              name="phone"
-              type="tel"
-              autoComplete="tel"
-              placeholder="e.g. 0821234567"
-              value={phoneNumber}
-              onChange={(e) => setPhoneNumber(e.target.value)}
-              disabled={loading}
-              className={inputClass}
-            />
-          </Field>
-
-          <Field id="password" label="Password" hint="Minimum 8 characters">
-            <input
-              id="password"
-              name="password"
-              type="password"
-              autoComplete="new-password"
-              placeholder="Create a password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              disabled={loading}
-              className={inputClass}
-            />
-          </Field>
-
-          <Field id="confirmPassword" label="Confirm password">
-            <input
-              id="confirmPassword"
-              name="confirmPassword"
-              type="password"
-              autoComplete="new-password"
-              placeholder="Repeat your password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              disabled={loading}
-              className={inputClass}
-            />
-          </Field>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field id="firstName" label="First name">
+              <input id="firstName" name="firstName" type="text" autoComplete="given-name" value={firstName} onChange={(e) => setFirstName(e.target.value)} disabled={loading} className={inputClass.replace("h-14", "h-11").replace("text-base", "text-sm")} />
+            </Field>
+            <Field id="surname" label="Surname">
+              <input id="surname" name="surname" type="text" autoComplete="family-name" value={surname} onChange={(e) => setSurname(e.target.value)} disabled={loading} className={inputClass.replace("h-14", "h-11").replace("text-base", "text-sm")} />
+            </Field>
+          </div>
 
           
           {role === "STUDENT" && (
@@ -356,49 +336,24 @@ export default function RegisterPage() {
                   value={studentNumber}
                   onChange={(e) => setStudentNumber(e.target.value)}
                   disabled={loading}
-                  className={inputClass}
+                  className={inputClass.replace("h-14", "h-11").replace("text-base", "text-sm")}
                 />
               </Field>
 
-              <Field id="faculty" label="Faculty">
-                <select
-                  id="faculty"
-                  value={faculty}
-                  onChange={(e) => handleFacultyChange(e.target.value)}
-                  disabled={loading}
-                  className={selectClass}
-                >
-                  <option value="">Select your faculty</option>
-                  {FACULTIES.map((f) => (
-                    <option key={f} value={f}>
-                      {f}
-                    </option>
-                  ))}
-                </select>
-              </Field>
-
-              <Field
-                id="department"
-                label="Department"
-                hint={!faculty ? "Select a faculty first" : undefined}
-              >
-                <select
-                  id="department"
-                  value={department}
-                  onChange={(e) => setDepartment(e.target.value)}
-                  disabled={loading || !faculty}
-                  className={selectClass}
-                >
-                  <option value="">
-                    {faculty ? "Select your department" : "Select a faculty first"}
-                  </option>
-                  {departments.map((d) => (
-                    <option key={d} value={d}>
-                      {d}
-                    </option>
-                  ))}
-                </select>
-              </Field>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Field id="faculty" label="Faculty">
+                  <select id="faculty" value={faculty} onChange={(e) => handleFacultyChange(e.target.value)} disabled={loading} className={selectClass.replace("h-14", "h-11").replace("text-base", "text-sm")}>
+                    <option value="">Select your faculty</option>
+                    {FACULTIES.map((f) => <option key={f} value={f}>{f}</option>)}
+                  </select>
+                </Field>
+                <Field id="department" label="Department">
+                  <select id="department" value={department} onChange={(e) => setDepartment(e.target.value)} disabled={loading || !faculty} className={selectClass.replace("h-14", "h-11").replace("text-base", "text-sm")}>
+                    <option value="">{faculty ? "Select your department" : "Select a faculty first"}</option>
+                    {departments.map((d) => <option key={d} value={d}>{d}</option>)}
+                  </select>
+                </Field>
+              </div>
 
               <Field id="yearOfStudy" label="Year of study">
                 <select
@@ -406,7 +361,7 @@ export default function RegisterPage() {
                   value={yearOfStudy}
                   onChange={(e) => setYearOfStudy(e.target.value)}
                   disabled={loading}
-                  className={selectClass}
+                  className={selectClass.replace("h-14", "h-11").replace("text-base", "text-sm")}
                 >
                   <option value="">Select your year</option>
                   {[1, 2, 3, 4, 5, 6].map((y) => (
@@ -422,11 +377,26 @@ export default function RegisterPage() {
           
           {role === "ORGANIZER" && (
             <>
-              <Field
-                id="organizationName"
-                label="Organization name"
-                hint="e.g. CPUT Computer Science Society"
-              >
+              <p className="rounded-lg bg-[#fdf3e1] px-3 py-2.5 text-xs leading-5 text-[#7a5a10]">
+                Organizer accounts are reviewed by an administrator before you can publish events.
+              </p>
+              <Field id="organizerStaffNumber" label="Staff number">
+                <input id="organizerStaffNumber" name="staffNumber" type="text" placeholder="e.g. STF0147" value={organizerStaffNumber} onChange={(e) => setOrganizerStaffNumber(e.target.value)} disabled={loading} className={inputClass.replace("h-14", "h-11").replace("text-base", "text-sm")} />
+              </Field>
+              <div className="grid gap-4 sm:grid-cols-2">
+              <Field id="organizationType" label="Organization type">
+                <input
+                  id="organizationType"
+                  name="organizationType"
+                  type="text"
+                  placeholder="Enter the type of society or organization"
+                  value={organizationType}
+                  onChange={(e) => setOrganizationType(e.target.value)}
+                  disabled={loading}
+                  className={inputClass.replace("h-14", "h-11").replace("text-base", "text-sm")}
+                />
+              </Field>
+              <Field id="organizationName" label="Society or organization">
                 <input
                   id="organizationName"
                   name="organizationName"
@@ -435,37 +405,10 @@ export default function RegisterPage() {
                   value={organizationName}
                   onChange={(e) => setOrganizationName(e.target.value)}
                   disabled={loading}
-                  className={inputClass}
+                  className={inputClass.replace("h-14", "h-11").replace("text-base", "text-sm")}
                 />
               </Field>
-
-              <Field
-                id="organizationType"
-                label="Organization type"
-                hint="e.g. Student Society, Department, Sports Club"
-              >
-                <select
-                  id="organizationType"
-                  value={organizationType}
-                  onChange={(e) => setOrganizationType(e.target.value)}
-                  disabled={loading}
-                  className={selectClass}
-                >
-                  <option value="">Select organization type</option>
-                  {[
-                    "Student Society",
-                    "Department",
-                    "Sports Club",
-                    "Academic Club",
-                    "Cultural Organization",
-                    "Other",
-                  ].map((t) => (
-                    <option key={t} value={t}>
-                      {t}
-                    </option>
-                  ))}
-                </select>
-              </Field>
+              </div>
 
               <Field
                 id="contactEmail"
@@ -481,11 +424,51 @@ export default function RegisterPage() {
                   value={contactEmail}
                   onChange={(e) => setContactEmail(e.target.value)}
                   disabled={loading}
-                  className={inputClass}
+                  className={inputClass.replace("h-14", "h-11").replace("text-base", "text-sm")}
                 />
               </Field>
             </>
           )}
+
+          {role === "ADMIN" && (
+            <>
+              <p className="rounded-lg bg-[#e4f6ec] px-3 py-2.5 text-xs leading-5 text-[#1f7a46]">
+                Register with your ICT staff details.
+              </p>
+              <Field id="adminStaffNumber" label="Staff number">
+                <input
+                  id="adminStaffNumber"
+                  name="staffNumber"
+                  type="text"
+                  autoComplete="username"
+                  placeholder="e.g. STF0001"
+                  value={adminStaffNumber}
+                  onChange={(e) => setAdminStaffNumber(e.target.value)}
+                  disabled={loading}
+                  className={inputClass.replace("h-14", "h-11").replace("text-base", "text-sm")}
+                />
+              </Field>
+            </>
+          )}
+
+          <Field id="email" label="University email">
+            <input id="email" name="email" type="email" autoComplete="email" placeholder="name@mycput.ac.za or name@cput.ac.za" value={email} onChange={(e) => setEmail(e.target.value)} disabled={loading} className={inputClass.replace("h-14", "h-11").replace("text-base", "text-sm")} />
+          </Field>
+          <Field id="phone" label="Mobile number" hint="South African number e.g. 0821234567">
+            <input id="phone" name="phone" type="tel" autoComplete="tel" placeholder="e.g. 0821234567" value={phoneNumber} onChange={(e) => setPhoneNumber(e.target.value)} disabled={loading} className={inputClass.replace("h-14", "h-11").replace("text-base", "text-sm")} />
+          </Field>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field id="password" label="Password" hint="At least 8 characters.">
+              <input id="password" name="password" type="password" autoComplete="new-password" value={password} onChange={(e) => setPassword(e.target.value)} disabled={loading} className={inputClass.replace("h-14", "h-11").replace("text-base", "text-sm")} />
+            </Field>
+            <Field id="confirmPassword" label="Confirm password">
+              <input id="confirmPassword" name="confirmPassword" type="password" autoComplete="new-password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} disabled={loading} className={inputClass.replace("h-14", "h-11").replace("text-base", "text-sm")} />
+            </Field>
+          </div>
+          <label className="flex items-start gap-2 text-xs leading-5 text-[#6b7385]">
+            <input type="checkbox" checked={termsAccepted} onChange={(e) => setTermsAccepted(e.target.checked)} disabled={loading} className="mt-1 accent-[#1f6fd1]" />
+            <span>I accept the university IT usage policy and event terms.</span>
+          </label>
 
           
           {error && (
@@ -499,14 +482,14 @@ export default function RegisterPage() {
           <button
             type="submit"
             disabled={loading}
-            className="mt-1 min-h-[58px] w-full rounded-lg bg-[#087dbb] text-base font-bold text-white shadow-[0_3px_8px_rgba(8,125,187,0.2)] transition hover:bg-[#066a9f] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#087dbb]/20 active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50"
+            className="mt-1 min-h-11 w-full rounded-lg bg-[#1f6fd1] text-sm font-semibold text-white transition hover:bg-[#195fb5] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#1f6fd1]/20 active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50"
           >
             {loading ? "Creating account..." : "Create account"}
           </button>
         </form>
 
         
-        <p className="mt-9 text-base text-gray-600 sm:mt-11">
+        <p className="mt-5 text-center text-[13px] text-[#6b7385]">
           Already have an account?{" "}
           <Link
             to="/login"
@@ -515,6 +498,7 @@ export default function RegisterPage() {
             Sign in
           </Link>
         </p>
+        </div>
       </section>
     </main>
   );
