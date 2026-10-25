@@ -3,7 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import { register } from "../../api/auth";
 import { getHomePathForRole } from "../../context/auth-context";
-import campusImage from "../../assets/cput-campus-background.jpg";
+import AuthVisualAside from "../../components/auth/AuthVisualAside";
 
 
 const FACULTY_DEPARTMENTS = {
@@ -253,27 +253,7 @@ export default function RegisterPage() {
 
   return (
     <main className="grid min-h-screen bg-[#f6f8fb] font-sans text-[#1d2433] lg:grid-cols-2">
-      <aside
-        className="hidden min-h-screen flex-col justify-between bg-cover bg-center p-12 text-white lg:flex xl:p-16"
-        style={{
-          backgroundImage: `linear-gradient(160deg, rgba(20,24,28,.76), rgba(12,18,16,.72)), url(${campusImage})`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          backgroundRepeat: "no-repeat",
-        }}
-      >
-        <div className="text-lg font-bold">UniVent<span className="mt-0.5 block text-[11px] font-normal opacity-80">University Event Management</span></div>
-        <div className="max-w-lg">
-          <h2 className="mb-3 text-3xl font-bold leading-tight">One place for every campus event.</h2>
-          <p className="max-w-md text-sm leading-6 opacity-85">Browse workshops, career fairs, sports days and cultural festivals. Register in a click and keep your schedule in one place.</p>
-          <ul className="mt-6 space-y-2 text-[13px] opacity-90">
-            <li>Students register for events and manage tickets</li>
-            <li>Organizers publish events after administrator approval</li>
-            <li>Discover what is happening across CPUT campuses</li>
-          </ul>
-        </div>
-        <p className="text-xs opacity-70">2026 UniVent · ICT Services</p>
-      </aside>
+      <AuthVisualAside />
 
       <section className="flex justify-center px-5 py-10 sm:px-8 sm:py-12 lg:max-h-screen lg:overflow-y-auto lg:px-10 xl:px-14" aria-labelledby="register-title">
         <div className="my-auto w-full max-w-[450px]">
