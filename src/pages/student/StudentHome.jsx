@@ -10,11 +10,9 @@ import EmptyState from "@/components/EmptyState";
 import EventCard from "@/components/EventCard";
 import { useAuth } from "@/hooks/useAuth";
 import { getApiErrorMessage } from "@/lib/apiError";
-import { demoBookings, demoEvents, demoNotifications, demoProfile } from "@/lib/demoData";
 import { formatDate, formatTimeRange, relativeTime } from "@/lib/format";
 
 
-const DEMO = import.meta.env.DEV && new URLSearchParams(window.location.search).get("demo") === "1";
 
 const asList = (r) => (Array.isArray(r) ? r : r?.content ?? []);
 
@@ -24,27 +22,32 @@ const fetchBookings = () => getMyBookings().then(asList);
 
 const EMPTY_LIST = [];
 const EMPTY_OBJECT = {};
-
-function useLoad(fetcher, fallbackMessage, demoValue, emptyValue = EMPTY_LIST) {
-  const [state, setState] = useState(() =>
-    DEMO ? { loading: false, data: demoValue, error: "" } : { loading: true, data: null, error: "" },
-  );
+function useLoad(fetcher, fallbackMessage, emptyValue = EMPTY_LIST) {
+  const [state, setState] = useState({
+    loading: true,
+    data: null,
+    error: "",
+  });
 
   useEffect(() => {
-    if (DEMO) return undefined;
     let active = true;
+
     fetcher()
-      .then((data) => active && setState({ loading: false, data, error: "" }))
+      .then((data) => {
+        if (active) {
+          setState({ loading: false, data, error: "" });
+        }
+      })
       .catch((e) => {
         if (!active) return;
-        // DEV only: backend offline (no server response) is treated as "no data yet",
-        // so the empty states show instead of red errors. Delete before the PR.
-        if (import.meta.env.DEV && !e.response) {
-          setState({ loading: false, data: emptyValue, error: "" });
-        } else {
-          setState({ loading: false, data: null, error: getApiErrorMessage(e, fallbackMessage) });
-        }
+
+        setState({
+          loading: false,
+          data: emptyValue,
+          error: getApiErrorMessage(e, fallbackMessage),
+        });
       });
+
     return () => {
       active = false;
     };
@@ -52,6 +55,7 @@ function useLoad(fetcher, fallbackMessage, demoValue, emptyValue = EMPTY_LIST) {
 
   return state;
 }
+
 
 const cardClass = "rounded-xl border border-slate-200 bg-white shadow-sm";
 
@@ -97,10 +101,10 @@ function StatusPill({ status }) {
 
 export default function StudentHome() {
   const { user } = useAuth();
-  const events = useLoad(fetchEvents, "We could not load recommended events.", demoEvents);
-  const notes = useLoad(fetchNotifications, "We could not load notifications.", demoNotifications);
-  const bookings = useLoad(fetchBookings, "We could not load your registrations.", demoBookings);
-  const profile = useLoad(getCurrentUser, "", demoProfile, EMPTY_OBJECT);
+ const events = useLoad(fetchEvents, "We could not load recommended events.");
+const notes = useLoad(fetchNotifications, "We could not load notifications.");
+const bookings = useLoad(fetchBookings, "We could not load your registrations.");
+const profile = useLoad(getCurrentUser, "We could not load your profile.", EMPTY_OBJECT);
 
   const firstName = user?.name?.split(" ")[0];
   const unread = notes.data ? notes.data.filter((n) => !n.read).length : 0;
@@ -123,7 +127,7 @@ export default function StudentHome() {
   const points = profile.data?.participationPoints;
 
   return (
-    <AppShell unreadOverride={DEMO ? unread : undefined}>
+   <AppShell>
       <main className="mx-auto max-w-7xl px-5 py-8 sm:px-8">
         <header className="flex flex-wrap items-start justify-between gap-4">
           <div>

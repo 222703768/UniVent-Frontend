@@ -5,14 +5,9 @@ import { cancelBooking, getMyBookings } from "@/api/bookings";
 import AppShell from "@/components/AppShell";
 import EmptyState from "@/components/EmptyState";
 import { getApiErrorMessage } from "@/lib/apiError";
-import { demoBookings } from "@/lib/demoData";
 import { formatDate, formatTimeRange } from "@/lib/format";
 
-// SMOKE TEST ONLY (dev builds). Delete before the PR.
-//   ?demo=1      -> populated tabs (uses demoBookings)
-//   ?demo=empty  -> new student, every tab empty
-const DEMO_PARAM = import.meta.env.DEV ? new URLSearchParams(window.location.search).get("demo") : null;
-const DEMO = DEMO_PARAM === "1" || DEMO_PARAM === "empty";
+
 
 const asList = (r) => (Array.isArray(r) ? r : r?.content ?? []);
 
@@ -165,32 +160,27 @@ function BookingRow({ booking, tab, onCancel }) {
 
 export default function MyEvents() {
   const [tab, setTab] = useState("upcoming");
-  const [state, setState] = useState(() =>
-    DEMO
-      ? { loading: false, error: "", bookings: DEMO_PARAM === "1" ? demoBookings : [] }
-      : { loading: true, error: "", bookings: [] },
-  );
+ const [state, setState] = useState({
+  loading: true,
+  error: "",
+  bookings: [],
+});
   const [pending, setPending] = useState(null); // booking awaiting cancel confirmation
   const [busy, setBusy] = useState(false);
   const [cancelError, setCancelError] = useState("");
 
   useEffect(() => {
-    if (DEMO) return undefined;
+    
     let active = true;
     getMyBookings()
       .then((r) => active && setState({ loading: false, error: "", bookings: asList(r) }))
       .catch((e) => {
         if (!active) return;
-        // DEV only: backend offline is treated as "no bookings yet". Delete before the PR.
-        if (import.meta.env.DEV && !e.response) {
-          setState({ loading: false, error: "", bookings: [] });
-        } else {
-          setState({
-            loading: false,
-            error: getApiErrorMessage(e, "We could not load your events."),
-            bookings: [],
-          });
-        }
+        setState({
+          loading: false,
+          error: getApiErrorMessage(e, "We could not load your events."),
+          bookings: [],
+        })
       });
     return () => {
       active = false;
@@ -219,7 +209,7 @@ export default function MyEvents() {
     setBusy(true);
     setCancelError("");
     try {
-      if (!DEMO) await cancelBooking(pending.bookingReference);
+      await cancelBooking(pending.bookingReference);
       // Update local state so the row moves to Cancelled without a reload.
       setState((s) => ({
         ...s,
