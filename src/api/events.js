@@ -1,21 +1,22 @@
 import client from "./client";
 
 /**
- * Fetch the event collection for the Browse Events screen (FE 30).
+ * Fetch the event collection.
  *
- * Agreed contract (BE 04):
+ * Browse Events (FE 30) uses the BE 04 query:
  *   GET /api/events?search=&category=&from=&to=&status=APPROVED&page=&size=
  *
- * `params` is forwarded as query-string parameters. Empty/undefined values
- * are stripped so the request only carries the filters that are actually set.
+ * Callers may pass that query, another filters object, or no argument.
+ * Empty, null, and undefined values are omitted so only filters that are
+ * actually set are sent.
  */
-export const getEvents = async (params = {}) => {
-  const query = Object.fromEntries(
-    Object.entries(params).filter(
+export const getEvents = async (filters = {}) => {
+  const params = Object.fromEntries(
+    Object.entries(filters).filter(
       ([, value]) => value !== undefined && value !== null && value !== ""
     )
   );
-  const response = await client.get("/api/events", { params: query });
+  const response = await client.get("/api/events", { params });
   return response.data;
 };
 

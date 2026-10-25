@@ -21,6 +21,9 @@ export const bookingExists = async (eventId) => {
   return response.data;
 };
 
+/** Same request as bookingExists, for callers that use the main-branch name. */
+export const hasBooking = bookingExists;
+
 export const getMyBookings = async () => {
   const response = await client.get("/api/bookings/my");
   return response.data;

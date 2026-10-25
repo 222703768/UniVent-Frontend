@@ -5,7 +5,7 @@ export const AuthContext = createContext(null);
 export function getHomePathForRole(role) {
   switch (role) {
     case "STUDENT":
-      return "/student/profile";
+      return "/student";
     case "ORGANIZER":
       return "/organizer";
     case "ADMIN":

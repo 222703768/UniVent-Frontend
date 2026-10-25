@@ -20,6 +20,7 @@ export function AuthProvider({ children }) {
       name: authResponse.name,
       email: authResponse.email,
       role: authResponse.role,
+      accountStatus: authResponse.accountStatus,
     };
 
     
